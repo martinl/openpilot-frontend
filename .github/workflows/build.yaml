@@ -37,20 +37,12 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/bun.lock') }}
 
-      - name: Install Playwright Chromium & OS dependencies
-        run: |
-          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" != "true" ]; then
-            bun playwright install --with-deps chromium
-          else
-            bun playwright install-deps chromium
-          fi
-
       - name: Run lint, typecheck, tests, and bundle checks
         run: |
           echo "::add-matcher::.github/tsc.json"
           ./test.sh
         env:
-          SKIP_PLAYWRIGHT_INSTALL: 'true'
+          SKIP_PLAYWRIGHT_INSTALL: ${{ steps.playwright-cache.outputs.cache-hit }}
           VITE_SENTRY_ENVIRONMENT: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
           VITE_APP_GIT_SHA: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
 
