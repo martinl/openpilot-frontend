@@ -29,6 +29,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        globIgnores: ['config.js'],
+        navigateFallbackDenylist: [/^\/config\.js$/, /^\/healthz$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com/,

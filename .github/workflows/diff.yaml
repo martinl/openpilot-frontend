@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.head_ref || github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   check-branch:
     name: Check PR branch status
@@ -16,7 +19,7 @@ jobs:
     outputs:
       outdated: ${{ steps.status.outputs.outdated }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
@@ -47,13 +50,13 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: Checkout code from PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
           path: pr
       - name: Checkout code from commaai master
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: base
       - uses: oven-sh/setup-bun@v2

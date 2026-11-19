@@ -9,4 +9,4 @@ docker build \
   --build-arg VITE_APP_GIT_TIMESTAMP=$GIT_TIMESTAMP \
   -t connect-app:latest .
 
-docker run -p 8080:80 connect-app:latest
+docker run --rm --read-only --tmpfs /tmp --tmpfs /var/cache/nginx --user 101:101 -p 8080:8080 connect-app:latest

@@ -1,4 +1,6 @@
-export const ATHENA_URL = 'https://api.konik.ai/ws'
-export const API_URL = 'https://api.konik.ai'
-export const BILLING_URL = 'https://billing.comma.ai'
-export const USERADMIN_URL = 'https://useradmin.konik.ai'
+import { appConfig } from '~/config'
+
+export const ATHENA_URL = appConfig.athenaUrl
+export const API_URL = appConfig.apiUrl
+export const BILLING_URL = appConfig.billingUrl
+export const USERADMIN_URL = appConfig.useradminUrl
