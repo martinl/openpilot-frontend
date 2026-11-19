@@ -15,6 +15,9 @@ concurrency:
   group: ${{ github.event.workflow_run.head_branch }}-${{ github.workflow }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   pr:
     name: Find PR number
@@ -54,7 +57,7 @@ jobs:
     timeout-minutes: 2
     steps:
       - name: Create PR check
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         id: check
         with:
           script: |
@@ -71,11 +74,11 @@ jobs:
             })
             return response.data.id
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: build-artifacts-${{ github.event.workflow_run.id }}
           path: ./dist
@@ -83,7 +86,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_PAGES_TOKEN }}
@@ -106,7 +109,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout ci-artifacts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: commaai/ci-artifacts
           ssh-key: ${{ secrets.CI_ARTIFACTS_DEPLOY_KEY }}
@@ -169,7 +172,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Update PR check
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           github.rest.checks.update({

@@ -5,6 +5,7 @@ import DevicePinGate, { useDevicePinAuth } from '~/components/DevicePinGate'
 import Button from '~/components/material/Button'
 import IconButton from '~/components/material/IconButton'
 import TopAppBar from '~/components/material/TopAppBar'
+import { appConfig } from '~/config'
 
 type StreamItem = {
   label: string
@@ -19,16 +20,7 @@ const STREAM_LABELS: Record<string, string> = {
 
 const INACTIVITY_TIMEOUT_MS = 30_000
 
-const ICE_SERVERS: RTCIceServer[] = [
-  {
-    urls: 'turn:85.190.241.173:3478',
-    username: 'testuser',
-    credential: 'testpass',
-  },
-  {
-    urls: ['stun:85.190.241.173:3478', 'stun:stun.l.google.com:19302'],
-  },
-]
+const ICE_SERVERS: RTCIceServer[] = appConfig.iceServers
 
 const LiveViewPane: VoidComponent<{ dongleId: string }> = (props) => {
   const { authToken } = useDevicePinAuth()

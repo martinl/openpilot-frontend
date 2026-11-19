@@ -1,8 +1,10 @@
-export const MAPBOX_USERNAME = 'commaai'
+import { appConfig } from '~/config'
 
-export const MAPBOX_LIGHT_STYLE_ID = 'clcl7mnu2000214s2zgcdly6e'
-export const MAPBOX_DARK_STYLE_ID = 'clcgvbi4f000q15t6o2s8gys3'
-export const MAPBOX_SATELLITE_STYLE_ID = 'satellite-streets-v12'
+export const MAPBOX_USERNAME = appConfig.mapboxUsername
+
+export const MAPBOX_LIGHT_STYLE_ID = appConfig.mapboxLightStyleId
+export const MAPBOX_DARK_STYLE_ID = appConfig.mapboxDarkStyleId
+export const MAPBOX_SATELLITE_STYLE_ID = appConfig.mapboxSatelliteStyleId
 
 export type BaseMapStyleKey = 'light' | 'dark' | 'satellite'
 
@@ -20,5 +22,4 @@ export const MAP_STYLE_OPTIONS: MapStyleOption[] = [
   { key: 'satellite', label: 'Satellite', owner: 'mapbox', id: MAPBOX_SATELLITE_STYLE_ID },
 ]
 
-// TODO: validate env or throw error
-export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string
+export const MAPBOX_TOKEN = appConfig.mapboxToken
