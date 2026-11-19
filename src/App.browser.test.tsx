@@ -14,7 +14,7 @@ beforeEach(() => signOut())
 
 test('Show login page', async () => {
   const { findByText } = renderApp('/')
-  expect(await findByText('Sign in with Google')).toBeTruthy()
+  expect(await findByText('Sign in with GitHub')).toBeTruthy()
 })
 
 describe('Demo mode', () => {

@@ -17,7 +17,8 @@ ENV SENTRY_RELEASE=$SENTRY_RELEASE
 
 RUN --mount=type=secret,id=sentry_auth_token,required=false \
   if [ -f /run/secrets/sentry_auth_token ]; then export SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token)"; fi && \
-  bun run build
+  bun run build && \
+  find /app/dist -name '*.map' -delete
 
 # *** final image (non-root, port 8080) ***
 FROM nginxinc/nginx-unprivileged:1.27-alpine
