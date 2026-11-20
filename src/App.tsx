@@ -24,8 +24,6 @@ export const Routes = () => (
   </>
 )
 
-const queryClient = getAppQueryClient()
-
 export const AppLayout: ParentComponent = (props) => {
   const [isOnline, setIsOnline] = createSignal(navigator.onLine)
   const handleOnline = () => setIsOnline(true)
@@ -38,19 +36,21 @@ export const AppLayout: ParentComponent = (props) => {
   })
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <SolidQueryDevtools />
-      <Show when={isOnline()} fallback={<OfflinePage />}>
-        {props.children}
-      </Show>
-    </QueryClientProvider>
+    <Show when={isOnline()} fallback={<OfflinePage />}>
+      {props.children}
+    </Show>
   )
 }
 
+const queryClient = getAppQueryClient()
+
 const App: VoidComponent = () => (
-  <Router root={AppLayout}>
-    <Routes />
-  </Router>
+  <QueryClientProvider client={queryClient}>
+    <SolidQueryDevtools />
+    <Router root={AppLayout}>
+      <Routes />
+    </Router>
+  </QueryClientProvider>
 )
 
 export default App

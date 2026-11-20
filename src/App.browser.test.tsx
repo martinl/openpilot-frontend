@@ -1,8 +1,11 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest'
 import { configure, render, waitFor } from '@solidjs/testing-library'
+import { createMemoryHistory, MemoryRouter } from '@solidjs/router'
+import { QueryClientProvider } from '@tanstack/solid-query'
 
 import { setAccessToken, signOut } from '~/api/auth/client'
 import * as Demo from '~/api/auth/demo'
+import { getAppQueryClient } from '~/api/query-client'
 import { AppLayout, Routes } from './App'
 
 const DEMO_LOG_ID = '000000dd--455f14369d'
@@ -67,7 +70,17 @@ const jsonResponse = (body: unknown) =>
     headers: { 'Content-Type': 'application/json' },
   })
 
-const renderApp = (location: string) => render(() => <Routes />, { location, wrapper: AppLayout })
+const renderApp = (location: string) => {
+  const history = createMemoryHistory()
+  history.set({ value: location, scroll: false, replace: true })
+  return render(() => (
+    <QueryClientProvider client={getAppQueryClient()}>
+      <MemoryRouter root={AppLayout} history={history}>
+        <Routes />
+      </MemoryRouter>
+    </QueryClientProvider>
+  ))
+}
 
 beforeAll(() => configure({ asyncUtilTimeout: 3000 }))
 beforeEach(() => signOut())
