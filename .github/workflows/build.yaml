@@ -74,7 +74,7 @@ jobs:
         uses: docker/setup-buildx-action@v4
 
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
@@ -97,8 +97,7 @@ jobs:
             VITE_APP_GIT_SHA=${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
             VITE_APP_GIT_TIMESTAMP=${{ env.GIT_TIMESTAMP }}
             SENTRY_RELEASE=${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
-          secrets: |
-            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          secrets: ${{ secrets.SENTRY_AUTH_TOKEN != '' && format('sentry_auth_token={0}', secrets.SENTRY_AUTH_TOKEN) || '' }}
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           load: true
@@ -135,8 +134,7 @@ jobs:
             VITE_APP_GIT_SHA=${{ github.sha }}
             VITE_APP_GIT_TIMESTAMP=${{ env.GIT_TIMESTAMP }}
             SENTRY_RELEASE=${{ github.sha }}
-          secrets: |
-            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          secrets: ${{ secrets.SENTRY_AUTH_TOKEN != '' && format('sentry_auth_token={0}', secrets.SENTRY_AUTH_TOKEN) || '' }}
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           push: true
