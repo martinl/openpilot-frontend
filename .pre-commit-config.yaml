@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1024']
+      - id: detect-private-key
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.0
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: biome check
+        entry: bash -c 'if command -v bun >/dev/null 2>&1 && [ -x ./node_modules/.bin/biome ]; then bun biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off "$@"; else echo "node_modules/.bin/biome not installed (run bun install), skipping local biome check"; fi' --
+        language: system
+        types_or: [javascript, jsx, ts, tsx, json, css]
+      - id: tsc
+        name: typescript typecheck
+        entry: bash -c 'if command -v bun >/dev/null 2>&1 && [ -x ./node_modules/.bin/tsc ]; then bun tsc; else echo "node_modules/.bin/tsc not installed (run bun install), skipping local tsc"; fi'
+        language: system
+        types_or: [ts, tsx]
+        pass_filenames: false

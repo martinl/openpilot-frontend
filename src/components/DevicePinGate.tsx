@@ -77,10 +77,13 @@ const DevicePinGate: ParentComponent<Props> = (props) => {
   }
 
   // Refresh on first mount and when dongle changes.
-  createResource(() => props.dongleId, async () => {
-    await refreshStatus()
-    return true
-  })
+  createResource(
+    () => props.dongleId,
+    async () => {
+      await refreshStatus()
+      return true
+    },
+  )
 
   const unlockWithPin = async (enteredPin: string) => {
     const resp = await remotePinVerify(props.dongleId, enteredPin)
@@ -127,9 +130,7 @@ const DevicePinGate: ParentComponent<Props> = (props) => {
                 <Icon name="info" filled />
               </div>
               <div class="flex flex-col">
-                <div class="text-lg font-semibold">
-                  {mode() === 'blocked' ? 'PIN not set up' : 'Enter PIN'}
-                </div>
+                <div class="text-lg font-semibold">{mode() === 'blocked' ? 'PIN not set up' : 'Enter PIN'}</div>
                 <div class="text-sm text-on-surface-variant">
                   {mode() === 'blocked'
                     ? `Set up a PIN on your device to use ${props.featureLabel}.`
@@ -139,7 +140,9 @@ const DevicePinGate: ParentComponent<Props> = (props) => {
             </div>
 
             <Show when={lockedS() > 0}>
-              <div class="mt-4 rounded-md bg-surface-container-high p-3 text-sm text-on-surface-variant">Locked. Try again in {lockedS()}s.</div>
+              <div class="mt-4 rounded-md bg-surface-container-high p-3 text-sm text-on-surface-variant">
+                Locked. Try again in {lockedS()}s.
+              </div>
             </Show>
 
             <Show when={error()}>
@@ -152,7 +155,7 @@ const DevicePinGate: ParentComponent<Props> = (props) => {
                   label="PIN"
                   type="tel"
                   inputMode="numeric"
-                  autoComplete="one-time-code"
+                  autocomplete="one-time-code"
                   name="device_pin"
                   required
                   minLength={4}
@@ -175,9 +178,7 @@ const DevicePinGate: ParentComponent<Props> = (props) => {
                 </div>
 
                 <Show when={mode() === 'enter'}>
-                  <div class="text-xs text-on-surface-variant">
-                    Forgot your PIN? The owner can reset it from device settings.
-                  </div>
+                  <div class="text-xs text-on-surface-variant">Forgot your PIN? The owner can reset it from device settings.</div>
                 </Show>
               </form>
             </Show>
@@ -185,9 +186,7 @@ const DevicePinGate: ParentComponent<Props> = (props) => {
         </div>
       }
     >
-      <DevicePinAuthContext.Provider value={{ authToken }}>
-        {props.children}
-      </DevicePinAuthContext.Provider>
+      <DevicePinAuthContext.Provider value={{ authToken }}>{props.children}</DevicePinAuthContext.Provider>
     </Show>
   )
 }

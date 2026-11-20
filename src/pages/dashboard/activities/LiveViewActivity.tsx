@@ -127,7 +127,7 @@ const LiveViewPane: VoidComponent<{ dongleId: string }> = (props) => {
         return
       }
 
-      await connection.setRemoteDescription(new RTCSessionDescription(offer))
+      await connection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer.sdp }))
 
       const answer = await connection.createAnswer()
       await connection.setLocalDescription(answer)

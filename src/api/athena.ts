@@ -6,12 +6,12 @@ const normalizeAthenaError = (err: unknown): string => {
   if (typeof err === 'string') return err
 
   if (err && typeof err === 'object') {
-    const anyErr = err as any
+    const anyErr = err as Record<string, unknown>
 
     // `fetcher()` throws `Error(message, { cause })`.
     const cause = anyErr?.cause
     if (cause && typeof cause === 'object') {
-      const anyCause = cause as any
+      const anyCause = cause as Record<string, unknown>
       if (typeof anyCause.error === 'string') return anyCause.error
       if (typeof anyCause.description === 'string') return anyCause.description
       if (typeof anyCause.message === 'string') return anyCause.message
@@ -150,7 +150,7 @@ export const makeAthenaCall = async <REQ, RES>(
     return { queued: false, error: normalizeAthenaError(err), result: undefined }
   }
   if ('error' in res) {
-    return { queued: false, error: normalizeAthenaError((res as any).error), result: undefined }
+    return { queued: false, error: normalizeAthenaError(res.error), result: undefined }
   }
   if (typeof res.result === 'string' && res.result === 'Device offline, message queued') {
     return { queued: true, error: undefined, result: undefined }

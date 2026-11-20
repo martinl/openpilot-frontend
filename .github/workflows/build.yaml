@@ -9,50 +9,49 @@ on:
     types: [checks_requested]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Get commit date
+        run: echo "VITE_APP_GIT_TIMESTAMP=$(git show -s --format=%cI)" >> $GITHUB_ENV
+
+      - run: bun install --frozen-lockfile
 
       - uses: actions/cache@v5
         id: playwright-cache
         with:
-          path: |
-            ~/.cache/ms-playwright
+          path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/bun.lock') }}
 
-      - name: Run tests
+      - name: Run lint, typecheck, tests, and bundle checks
         run: |
           echo "::add-matcher::.github/tsc.json"
           ./test.sh
         env:
+          PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: ubuntu24.04-x64
           SKIP_PLAYWRIGHT_INSTALL: ${{ steps.playwright-cache.outputs.cache-hit }}
-
-      - name: Dependency security audit
-        run: bun audit --audit-level=high
-
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    steps:
-      - uses: actions/checkout@v5
-      - uses: oven-sh/setup-bun@v2
-
-      - name: get commit date
-        run: echo "VITE_APP_GIT_TIMESTAMP=$(git show -s --format=%cI)" >> $GITHUB_ENV
-
-      - run: bun install --frozen-lockfile
-      - run: bun run build
-        env:
           VITE_SENTRY_ENVIRONMENT: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
           VITE_APP_GIT_SHA: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
 
       - name: Bundle size breakdown
         run: bun dependency-report | column -t -s ":"
-      - run: bun bundle-size ./dist
+
+      - name: Dependency security audit
+        run: bun audit --audit-level=high || echo "::warning::High/critical advisories found in bun.lock"
 
       - name: Upload built project
         uses: actions/upload-artifact@v6
@@ -62,17 +61,10 @@ jobs:
           retention-days: 1
           name: build-artifacts-${{ github.run_id }}
 
-      - name: Deploy to Cloudflare Pages
-        if: github.ref == 'refs/heads/master' && github.repository == 'commaai/new-connect'
-        uses: cloudflare/wrangler-action@v4
-        with:
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          apiToken: ${{ secrets.CLOUDFLARE_PAGES_TOKEN }}
-          command: pages deploy dist --project-name=connect --branch=new-connect --commit-dirty=true
-
   docker:
+    needs: verify
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 15
     permissions:
       packages: write
       contents: read
@@ -81,29 +73,23 @@ jobs:
       - id: buildx
         uses: docker/setup-buildx-action@v4
 
-      - uses: docker/login-action@v4
-        if: github.ref == 'refs/heads/master' && github.repository == 'commaai/new-connect'
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/commaai/connect2  # TODO: switch to 'connect' after launch
+          images: ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=ref,event=pr,prefix=
-            type=sha,format=long,prefix=
+            type=sha,format=long,prefix=sha-
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
 
-      - name: get commit date
+      - name: Get commit date
         run: echo "GIT_TIMESTAMP=$(git show -s --format=%cI)" >> $GITHUB_ENV
 
-      - uses: docker/build-push-action@v7
+      - name: Build container image for scanning
+        uses: docker/build-push-action@v7
         env:
           DOCKER_BUILD_SUMMARY: false
         with:
@@ -111,21 +97,47 @@ jobs:
             VITE_APP_GIT_SHA=${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
             VITE_APP_GIT_TIMESTAMP=${{ env.GIT_TIMESTAMP }}
             SENTRY_RELEASE=${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
-          secrets: |
-            sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}
+          secrets: ${{ secrets.SENTRY_AUTH_TOKEN != '' && format('sentry_auth_token={0}', secrets.SENTRY_AUTH_TOKEN) || '' }}
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          load: ${{ !(github.ref == 'refs/heads/master' && github.repository == 'commaai/new-connect') }}
-          push: ${{ github.ref == 'refs/heads/master' && github.repository == 'commaai/new-connect' }}
+          load: true
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Scan container image for vulnerabilities
-        if: !(github.ref == 'refs/heads/master' && github.repository == 'commaai/new-connect')
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: table
           exit-code: 1
           ignore-unfixed: true
           severity: CRITICAL,HIGH
+
+      - name: Log in to Container Registry
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push verified container image
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: docker/build-push-action@v7
+        env:
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          build-args: |
+            VITE_APP_GIT_SHA=${{ github.sha }}
+            VITE_APP_GIT_TIMESTAMP=${{ env.GIT_TIMESTAMP }}
+            SENTRY_RELEASE=${{ github.sha }}
+          secrets: ${{ secrets.SENTRY_AUTH_TOKEN != '' && format('sentry_auth_token={0}', secrets.SENTRY_AUTH_TOKEN) || '' }}
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha

@@ -29,7 +29,6 @@
     "@vitest/browser": "run vitest suite in browser using playwright",
     "autoprefixer": "adds css vendor prefixes automatically",
     "jsdom": "js implementation of the dom (used in testing env which we don't really make use of)",
-    "lefthook": "git hooks manager for pre-commit",
     "playwright": "take screenshots to post on PRs",
     "postcss": "transforms css with js; autoprefixer and tailwind get plugged into this",
     "solid-devtools": "visualize reactivity graph (consider if necessary)",
@@ -53,7 +52,6 @@
     "@vitest/browser": "^3.1.1",
     "autoprefixer": "^10.4.21",
     "jsdom": "^26.0.0",
-    "lefthook": "^1.11.8",
     "playwright": "^1.51.1",
     "postcss": "^8.5.3",
     "solid-devtools": "^0.34.0",
@@ -98,7 +96,6 @@
     "@biomejs/biome",
     "@sentry/cli",
     "esbuild",
-    "lefthook",
     "workerd"
   ]
 }
