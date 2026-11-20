@@ -4,7 +4,7 @@ import { API_URL } from './config'
 const normalizeDescription = (desc: unknown): string => {
   if (typeof desc === 'string') return desc
   if (desc && typeof desc === 'object') {
-    const anyDesc = desc as any
+    const anyDesc = desc as Record<string, unknown>
     if (typeof anyDesc.message === 'string') return anyDesc.message
     try {
       return JSON.stringify(desc)
@@ -37,16 +37,16 @@ export async function fetcher<T>(endpoint: string, init?: RequestInit, apiUrl: s
   }
 
   // JSON-RPC responses (Athena) may include an `error` field; let the caller interpret it.
-  if (json && typeof json === 'object' && (json as any).jsonrpc) {
+  if (json && typeof json === 'object' && (json as Record<string, unknown>).jsonrpc) {
     return json
   }
 
   // Many endpoints use `{ error: true, description: string }`, while others use `{ error: string }`.
   // Only treat the boolean form as a transport-level error here; callers handle string errors.
-  if (json && typeof json === 'object' && 'error' in (json as any)) {
-    const err = (json as any).error
-    if (err === true) {
-      const desc = 'description' in (json as any) ? normalizeDescription((json as any).description) : 'Server error'
+  if (json && typeof json === 'object' && 'error' in (json as Record<string, unknown>)) {
+    const record = json as Record<string, unknown>
+    if (record.error === true) {
+      const desc = 'description' in record ? normalizeDescription(record.description) : 'Server error'
       throw new Error(desc.startsWith('Server error') ? desc : `Server error: ${desc}`, { cause: json })
     }
   }

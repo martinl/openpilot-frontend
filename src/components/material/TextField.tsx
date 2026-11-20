@@ -103,7 +103,7 @@ const TextField: Component<TextFieldProps> = (props) => {
             value={inputValue()}
             onInput={(e) => {
               setInputValue(e.currentTarget.value)
-              local.onInput?.(e)
+              if (typeof local.onInput === 'function') local.onInput(e)
             }}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
