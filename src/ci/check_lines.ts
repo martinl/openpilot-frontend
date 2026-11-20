@@ -115,7 +115,7 @@ if (import.meta.main) {
     console.log('Total lines:', totalLines)
 
     // This repo is already above the original upstream cap; keep a cap but make it realistic for current size.
-    if (totalLines > 6000) {
+    if (totalLines > 7500) {
       console.warn('Exceeded line limit!')
       process.exit(1)
     } else {

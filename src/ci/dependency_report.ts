@@ -11,10 +11,13 @@ for (const mapFile of mapFiles) {
   const assetFile = mapFile.replace(extension, '')
   const sources = mapFileData.sources
     .filter((source) => source.includes('node_modules'))
-    .map((source) => ({
-      name: source.split('node_modules/')[1],
-      size: fs.statSync(dir + source).size,
-    }))
+    .map((source) => {
+      const name = source.split('node_modules/')[1]
+      return {
+        name,
+        size: fs.statSync(`node_modules/${name}`).size,
+      }
+    })
   report.push({ asset: assetFile, size: fs.statSync(dir + assetFile).size, sources: sources })
 }
 report
