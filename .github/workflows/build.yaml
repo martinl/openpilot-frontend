@@ -66,7 +66,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      packages: write
       contents: read
     steps:
       - uses: actions/checkout@v5
@@ -76,19 +75,16 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: openpilot-frontend
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=ref,event=branch
-            type=ref,event=pr,prefix=
-            type=sha,format=long,prefix=sha-
+            type=raw,value=local-test
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
 
       - name: Get commit date
         run: echo "GIT_TIMESTAMP=$(git show -s --format=%cI)" >> $GITHUB_ENV
 
-      - name: Build container image for scanning
+      - name: Build container image for verification
         uses: docker/build-push-action@v7
         env:
           DOCKER_BUILD_SUMMARY: false
@@ -115,29 +111,3 @@ jobs:
           exit-code: 1
           ignore-unfixed: true
           severity: CRITICAL,HIGH
-
-      - name: Log in to Container Registry
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push verified container image
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        uses: docker/build-push-action@v7
-        env:
-          DOCKER_BUILD_SUMMARY: false
-        with:
-          build-args: |
-            VITE_APP_GIT_SHA=${{ github.sha }}
-            VITE_APP_GIT_TIMESTAMP=${{ env.GIT_TIMESTAMP }}
-            SENTRY_RELEASE=${{ github.sha }}
-          secrets: ${{ secrets.SENTRY_AUTH_TOKEN != '' && format('sentry_auth_token={0}', secrets.SENTRY_AUTH_TOKEN) || '' }}
-          builder: ${{ steps.buildx.outputs.name }}
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha

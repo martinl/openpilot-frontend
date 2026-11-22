@@ -1,8 +1,8 @@
-# Konik Stable
+# Openpilot Connect
 
-Konik Stable is the web and mobile experience for managing your device experience.
+Openpilot Connect is the web and mobile experience for managing your device experience.
 
-Try it out at https://stable.konik.ai
+Try it out at https://connect.apps.k8s.mlp.ee
 
 ## Development
 
@@ -14,9 +14,7 @@ curl -fsSL https://bun.sh/install | bash
 source ~/.bashrc  # or source ~/.zshrc
 
 cd ~
-git clone https://github.com/Konik-ai/Stable.git
-
-cd connect
+git clone https://github.com/martinl/openpilot-frontend.git connect
 bun install  # sets up pre-commit hook
 bun dev
 ```

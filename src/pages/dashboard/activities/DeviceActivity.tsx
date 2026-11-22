@@ -103,7 +103,7 @@ const DeviceActivity: VoidComponent<DeviceActivityProps> = (props) => {
           </Show>
         }
       >
-        Stable
+        Connect
       </TopAppBar>
       <div class="flex flex-col gap-4 px-4 pb-4">
         <div class="h-min overflow-hidden rounded-lg bg-surface-container-low">

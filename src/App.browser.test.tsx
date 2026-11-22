@@ -58,7 +58,7 @@ const DEMO_ROUTE = {
   start_lat: 32.723695,
   start_lng: -117.168638,
   start_time: '2025-01-01T00:00:00',
-  url: `https://api.konik.ai/connectdata/${Demo.DONGLE_ID}/${DEMO_LOG_ID}`,
+  url: `https://api.comma.ai/connectdata/${Demo.DONGLE_ID}/${DEMO_LOG_ID}`,
   user_id: 'demo',
   version: '0.9.8',
   vin: 'DEMO1234567890',
@@ -111,7 +111,7 @@ describe('Demo mode', () => {
       }
       if (url.includes(`/devices/${Demo.DONGLE_ID}/`)) return jsonResponse(DEMO_DEVICE)
       if (url.endsWith('/v1/me/')) {
-        return jsonResponse({ email: 'demo@konik.ai', id: 'demo', regdate: 0, superuser: false, user_id: 'demo' })
+        return jsonResponse({ email: 'demo@comma.ai', id: 'demo', regdate: 0, superuser: false, user_id: 'demo' })
       }
       if (url.includes('/share_signature')) return jsonResponse({ exp: '9999999999', sig: 'demosig' })
       if (url.includes('/files')) return jsonResponse({ cameras: [], dcameras: [], ecameras: [], logs: [] })

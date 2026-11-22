@@ -1,4 +1,4 @@
-const CACHE_NAME = 'konik-route-data-v1'
+const CACHE_NAME = 'openpilot-route-data-v1'
 
 async function openCache(): Promise<Cache | null> {
   try {
