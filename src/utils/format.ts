@@ -5,6 +5,7 @@ import duration, { type Duration } from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
 
 import type { Route } from '~/api/types'
+import { is24HourTime, isImperial } from './preferences'
 
 dayjs.extend(advanced)
 dayjs.extend(customParseFormat)
@@ -15,17 +16,13 @@ export { dayjs }
 
 const MI_TO_KM = 1.609344
 
-const isImperial = (): boolean => {
-  if (typeof navigator === 'undefined') return true
-  const locale = navigator.language.toLowerCase()
-  return locale.startsWith('en-us') || locale.startsWith('en-gb')
-}
-
 export const formatDistance = (miles: number | undefined): string | undefined => {
   if (miles === undefined) return undefined
   if (isImperial()) return `${miles.toFixed(1)} mi`
   return `${(miles * MI_TO_KM).toFixed(1)} km`
 }
+
+export const formatTime = (date: dayjs.Dayjs): string => date.format(is24HourTime() ? 'HH:mm' : 'h:mm A')
 
 const _formatDuration = (duration: Duration): string => {
   if (duration.hours() > 0) {

@@ -19,7 +19,7 @@ import RouteSpriteStrip from '~/components/RouteSpriteStrip'
 import RouteStatisticsBar from '~/components/RouteStatisticsBar'
 import { getPlaceName } from '~/map/geocode'
 import type { Route } from '~/api/types'
-import { getRouteEndTime, parseTimestamp } from '~/utils/format'
+import { formatTime, getRouteEndTime, parseTimestamp } from '~/utils/format'
 
 const PAGE_SIZE = 20
 const ESTIMATED_HEADER_SIZE = 40
@@ -80,7 +80,7 @@ const RouteCard: VoidComponent<RouteCardProps> = (props) => {
   return (
     <Card class="max-w-none" href={`/${props.route.dongle_id}/${props.route.fullname.slice(17)}`} activeClass="md:before:bg-primary">
       <CardHeader
-        headline={`${startTime().format('h:mm A')} to ${endTime().format('h:mm A')}`}
+        headline={`${formatTime(startTime())} to ${formatTime(endTime())}`}
         subhead={
           <Show when={props.location !== undefined} fallback={<div class="h-[20px] w-auto skeleton-loader rounded-xs" />}>
             {props.location}
