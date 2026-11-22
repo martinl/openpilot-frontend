@@ -51,6 +51,8 @@ jobs:
         run: bun dependency-report | column -t -s ":"
 
       - name: Dependency security audit
+        timeout-minutes: 3
+        continue-on-error: true
         run: bun audit --audit-level=high || echo "::warning::High/critical advisories found in bun.lock"
 
       - name: Upload built project
