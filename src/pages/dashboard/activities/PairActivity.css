@@ -1,4 +1,6 @@
 #video-container {
+  isolation: isolate;
+
   video {
     display: block;
     visibility: visible;
