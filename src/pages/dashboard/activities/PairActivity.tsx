@@ -1,4 +1,4 @@
-import { createSignal, For, onCleanup, onMount, Show, type JSX, type VoidComponent } from 'solid-js'
+import { onCleanup, onMount, type JSX, type VoidComponent } from 'solid-js'
 import { useLocation, useNavigate } from '@solidjs/router'
 import { createMachine } from '@solid-primitives/state-machine'
 import QrScanner from 'qr-scanner'
@@ -47,10 +47,15 @@ const PairActivity: VoidComponent<{ onPaired: () => void }> = (props) => {
       scanning(_input, to) {
         let videoRef!: HTMLVideoElement
         let qrScanner: QrScanner | undefined
-        const [cameras, setCameras] = createSignal<QrScanner.Camera[]>([])
-        const [selectedCamera, setSelectedCamera] = createSignal<string>('environment')
+        let rafId: number | undefined
+        let cleanedUp = false
 
-        onMount(() => {
+        const initScanner = () => {
+          if (cleanedUp) return
+          if (!videoRef || !document.body.contains(videoRef)) {
+            rafId = requestAnimationFrame(initScanner)
+            return
+          }
           qrScanner = new QrScanner(
             videoRef,
             (result) => {
@@ -59,55 +64,33 @@ const PairActivity: VoidComponent<{ onPaired: () => void }> = (props) => {
             },
             {
               highlightScanRegion: true,
-              preferredCamera: 'environment',
             },
           )
-          void qrScanner
-            .start()
-            .then(async () => {
-              const available = await QrScanner.listCameras(true)
-              setCameras(available)
-              if (available.length > 0) {
-                const activeTrack = (videoRef.srcObject as MediaStream | null)?.getVideoTracks?.()[0]
-                const activeDeviceId = activeTrack?.getSettings?.().deviceId
-                if (activeDeviceId) setSelectedCamera(activeDeviceId)
-              }
-            })
-            .catch((reason) => {
-              const error = toError(reason)
-              console.error('Error starting QR scanner', error, error.cause)
-              to.error({ error })
-            })
+          void qrScanner.start().catch((reason) => {
+            const error = toError(reason)
+            console.error('Error starting QR scanner', error, error.cause)
+            to.error({ error })
+          })
+        }
+
+        onMount(() => {
+          initScanner()
         })
 
         onCleanup(() => {
+          cleanedUp = true
+          if (rafId !== undefined) cancelAnimationFrame(rafId)
           try {
             qrScanner?.destroy()
           } catch (_) {}
         })
 
-        const handleCameraChange = (cameraId: string) => {
-          setSelectedCamera(cameraId)
-          void qrScanner?.setCamera(cameraId)
-        }
-
         return (
-          <div id="video-container" class="fixed inset-0 z-50 bg-black text-white">
-            <video class="absolute inset-0 size-full object-cover" autoplay muted playsinline ref={videoRef} />
+          <div id="video-container" class="fixed inset-0 bg-black text-white">
+            <video class="absolute inset-0 size-full object-cover" ref={videoRef} />
             <div class="prose absolute inset-0 flex flex-col justify-between pb-7">
               <TopAppBar trailing={<IconButton name="close" href="/" />}>Add new device</TopAppBar>
-              <div class="flex flex-col items-center gap-3 px-8">
-                <Show when={cameras().length > 1}>
-                  <select
-                    class="rounded-md bg-black/70 px-3 py-1.5 text-sm text-white outline outline-1 outline-white/30"
-                    value={selectedCamera()}
-                    onChange={(e) => handleCameraChange(e.currentTarget.value)}
-                  >
-                    <For each={cameras()}>{(cam) => <option value={cam.id}>{cam.label || cam.id}</option>}</For>
-                  </select>
-                </Show>
-                <h2 class="text-center text-md">Use the viewfinder to scan the QR code on your device</h2>
-              </div>
+              <h2 class="px-8 text-center text-md">Use the viewfinder to scan the QR code on your device</h2>
             </div>
           </div>
         )
