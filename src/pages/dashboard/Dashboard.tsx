@@ -105,7 +105,7 @@ const FirstPairActivity: Component = () => {
           </Show>
         }
       >
-        Stable
+        Connect
       </TopAppBar>
       <section class="flex flex-col gap-4 py-2 items-center mx-auto max-w-md px-4 mt-4 sm:mt-8 md:mt-16">
         <h2 class="text-xl">Pair your device</h2>

@@ -13,10 +13,10 @@ export default function Login() {
   return (
     <div class="relative flex min-h-screen flex-col items-center justify-center bg-background p-6">
       <div class="flex max-w-sm flex-col items-center gap-8">
-        <img src="/images/logo-connect-light.svg" alt="Konik Stable" width={96} height={96} />
+        <img src="/images/logo-connect-light.svg" alt="Konik Connect" width={96} height={96} />
 
         <div class="flex flex-col items-center gap-2 text-center">
-          <h1 class="text-2xl font-extrabold md:mt-4">Konik Stable</h1>
+          <h1 class="text-2xl font-extrabold md:mt-4">Konik Connect</h1>
           <p class="text-md">Manage your device experience.</p>
         </div>
 
