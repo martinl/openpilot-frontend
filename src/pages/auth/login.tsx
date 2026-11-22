@@ -13,10 +13,10 @@ export default function Login() {
   return (
     <div class="relative flex min-h-screen flex-col items-center justify-center bg-background p-6">
       <div class="flex max-w-sm flex-col items-center gap-8">
-        <img src="/images/logo-connect-light.svg" alt="Konik Connect" width={96} height={96} />
+        <img src="/images/logo-connect-light.svg" alt="Openpilot Connect" width={96} height={96} />
 
         <div class="flex flex-col items-center gap-2 text-center">
-          <h1 class="text-2xl font-extrabold md:mt-4">Konik Connect</h1>
+          <h1 class="text-2xl font-extrabold md:mt-4">Openpilot Connect</h1>
           <p class="text-md">Manage your device experience.</p>
         </div>
 
@@ -30,7 +30,7 @@ export default function Login() {
             </span>
             <span class="leading-5">
               I agree to the{' '}
-              <a class="text-primary underline underline-offset-2" href="https://konik.ai/privacy/" target="_blank" rel="noreferrer">
+              <a class="text-primary underline underline-offset-2" href="#" target="_blank" rel="noreferrer">
                 Terms of Service
               </a>
               .
@@ -52,12 +52,7 @@ export default function Login() {
           <img src="/images/icon-comma-three-light.svg" alt="" width={32} height={32} />
         </div>
       </div>
-      <div class="absolute bottom-4 left-4 text-xs text-on-surface-variant">
-        Built by{' '}
-        <a class="text-on-surface-variant underline underline-offset-2" href="https://konik.ai" target="_blank" rel="noreferrer">
-          Konik.ai
-        </a>
-      </div>
+      <div class="absolute bottom-4 left-4 text-xs text-on-surface-variant">openpilot Connect</div>
     </div>
   )
 }

@@ -35,15 +35,10 @@ const appCfg: Partial<AppConfig> = typeof window !== 'undefined' && window.__APP
 const legacyCfg: OpenpilotLegacyConfig = typeof window !== 'undefined' && window.__OPENPILOT_CONFIG__ ? window.__OPENPILOT_CONFIG__ : {}
 
 export const appConfig: AppConfig = {
-  apiUrl: appCfg.apiUrl ?? legacyCfg.API_HOST ?? (import.meta.env.VITE_API_URL as string | undefined) ?? 'https://api.konik.ai',
-  athenaUrl:
-    appCfg.athenaUrl ?? legacyCfg.ATHENA_HOST ?? (import.meta.env.VITE_ATHENA_URL as string | undefined) ?? 'https://api.konik.ai/ws',
+  apiUrl: appCfg.apiUrl ?? legacyCfg.API_HOST ?? (import.meta.env.VITE_API_URL as string | undefined) ?? '',
+  athenaUrl: appCfg.athenaUrl ?? legacyCfg.ATHENA_HOST ?? (import.meta.env.VITE_ATHENA_URL as string | undefined) ?? '',
   billingUrl: appCfg.billingUrl ?? (import.meta.env.VITE_BILLING_URL as string | undefined) ?? 'https://billing.comma.ai',
-  useradminUrl:
-    appCfg.useradminUrl ??
-    legacyCfg.USERADMIN_HOST ??
-    (import.meta.env.VITE_USERADMIN_URL as string | undefined) ??
-    'https://useradmin.konik.ai',
+  useradminUrl: appCfg.useradminUrl ?? legacyCfg.USERADMIN_HOST ?? (import.meta.env.VITE_USERADMIN_URL as string | undefined) ?? '',
   githubClientId:
     appCfg.githubClientId ??
     legacyCfg.GITHUB_CLIENT_ID ??

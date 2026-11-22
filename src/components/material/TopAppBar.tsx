@@ -2,7 +2,7 @@ import { Show, type JSXElement, type ParentComponent, type ValidComponent } from
 import { Dynamic } from 'solid-js/web'
 import clsx from 'clsx'
 
-import { isUpdateAvailable, updateKonikConnect } from '~/pwa'
+import { isUpdateAvailable, updateOpenpilotConnect } from '~/pwa'
 import IconButton from './IconButton'
 
 type TopAppBarProps = {
@@ -22,9 +22,9 @@ const TopAppBar: ParentComponent<TopAppBarProps> = (props) => {
       <Show when={isUpdateAvailable()}>
         <IconButton
           name="refresh"
-          title="Update Konik Connect"
-          aria-label="Update Konik Connect"
-          onClick={() => void updateKonikConnect()}
+          title="Update Openpilot Connect"
+          aria-label="Update Openpilot Connect"
+          onClick={() => void updateOpenpilotConnect()}
         />
       </Show>
       {props.trailing}

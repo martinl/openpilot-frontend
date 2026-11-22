@@ -81,7 +81,7 @@ export const setDeviceAlias = async (dongleId: string, alias: string): Promise<D
     body: JSON.stringify({ alias }),
   } satisfies RequestInit
 
-  // Konik-Connect uses `Devices.setDeviceAlias(...)`; the backend endpoint has varied across deployments.
+  // Openpilot Connect uses `Devices.setDeviceAlias(...)`; the backend endpoint has varied across deployments.
   // Try the v1.1 device endpoint first (used by getDevice/getDeviceStats), then fall back to v1.
   try {
     const device = await fetcher<ApiDevice>(`/v1.1/devices/${dongleId}/`, init)

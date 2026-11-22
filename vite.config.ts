@@ -16,7 +16,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Konik Connect',
+        name: 'Openpilot Connect',
         short_name: 'Connect',
         description: 'manage your device experience',
         background_color: '#131318',

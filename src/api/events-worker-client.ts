@@ -6,7 +6,7 @@ type WorkerResponse = { id: number; timeline?: TimelineEvent[]; error?: string }
 
 // Cap in-flight worker requests so bursts of RouteCards settling after a scroll
 // don't saturate the browser's HTTP connection pool. Each worker job triggers
-// ~maxqlog segment fetches against api.konik.ai — without this cap, scrolling
+// ~maxqlog segment fetches against backend API — without this cap, scrolling
 // causes the next /routes page request to queue behind hundreds of events.json
 // fetches.
 const MAX_CONCURRENT_WORKER_REQUESTS = 4

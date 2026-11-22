@@ -1,8 +1,8 @@
-# Konik Connect
+# Openpilot Connect
 
-Konik Connect is the web and mobile experience for managing your device experience.
+Openpilot Connect is the web and mobile experience for managing your device experience.
 
-Try it out at https://connect.konik.ai
+Try it out at https://connect.apps.k8s.mlp.ee
 
 ## Development
 
