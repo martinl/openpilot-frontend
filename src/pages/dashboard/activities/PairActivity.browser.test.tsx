@@ -79,6 +79,16 @@ describe('PairActivity QR scanner', () => {
       { timeout: 5000 },
     )
 
+    // Wait two animation frames so qr-scanner's own rAF visibility check has completed
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+
+    const videoAfterRaf = document.querySelector('#video-container video') as HTMLVideoElement | null
+    expect(videoAfterRaf).toBeTruthy()
+    expect(videoAfterRaf!.style.opacity).not.toBe('0')
+    expect(videoAfterRaf!.style.width).not.toBe('0px')
+    expect(videoAfterRaf!.style.height).not.toBe('0px')
+    expect(document.querySelector('#video-container .scan-region-highlight')).toBeTruthy()
+
     // Camera selector should appear when multiple cameras exist
     await waitFor(() => {
       const select = document.querySelector('select[aria-label="Select camera"]') as HTMLSelectElement | null
