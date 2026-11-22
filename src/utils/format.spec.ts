@@ -1,14 +1,49 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { dateTimeToColorBetween, formatDate, formatDistance, formatDuration } from './format'
+import { dateTimeToColorBetween, dayjs, formatDate, formatDistance, formatDuration, formatTime } from './format'
+import { setTimeFormat, setUnitSystem } from './preferences'
 
 describe('formatDistance', () => {
-  it('should format distance', () => {
+  afterEach(() => {
+    setUnitSystem('auto')
+  })
+
+  it('should format distance in imperial by default in node', () => {
     expect(formatDistance(0)).toBe('0.0 mi')
     expect(formatDistance(1.234)).toBe('1.2 mi')
   })
+
+  it('should format distance in metric when metric preference is selected', () => {
+    setUnitSystem('metric')
+    expect(formatDistance(0)).toBe('0.0 km')
+    expect(formatDistance(10)).toBe('16.1 km')
+  })
+
+  it('should format distance in imperial when imperial preference is selected', () => {
+    setUnitSystem('imperial')
+    expect(formatDistance(10)).toBe('10.0 mi')
+  })
+
   it('should be undefined for undefined distance', () => {
     expect(formatDistance(undefined)).toBe(undefined)
+  })
+})
+
+describe('formatTime', () => {
+  afterEach(() => {
+    setTimeFormat('auto')
+  })
+
+  it('should format time in 12-hour format', () => {
+    setTimeFormat('12h')
+    expect(formatTime(dayjs('2025-02-01T14:05:00'))).toBe('2:05 PM')
+    expect(formatTime(dayjs('2025-02-01T00:30:00'))).toBe('12:30 AM')
+  })
+
+  it('should format time in 24-hour format', () => {
+    setTimeFormat('24h')
+    expect(formatTime(dayjs('2025-02-01T14:05:00'))).toBe('14:05')
+    expect(formatTime(dayjs('2025-02-01T00:30:00'))).toBe('00:30')
   })
 })
 

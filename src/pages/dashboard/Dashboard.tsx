@@ -7,6 +7,7 @@ import { isSignedIn } from '~/api/auth/client'
 import { USERADMIN_URL } from '~/api/config'
 import { getDevices } from '~/api/devices'
 import { getProfile } from '~/api/profile'
+import { appConfig } from '~/config'
 import storage from '~/utils/storage'
 import type { Device } from '~/api/types'
 
@@ -19,13 +20,13 @@ import TopAppBar from '~/components/material/TopAppBar'
 
 import DeviceList from './components/DeviceList'
 import DeviceActivity from './activities/DeviceActivity'
-import LiveViewActivity from './activities/LiveViewActivity'
-import RemoteSshActivity from './activities/RemoteSshActivity'
 import RouteActivity from './activities/RouteActivity'
 import SettingsActivity from './activities/SettingsActivity'
 import BuildInfo from '~/components/BuildInfo'
 
+const LiveViewActivity = lazy(() => import('./activities/LiveViewActivity'))
 const PairActivity = lazy(() => import('./activities/PairActivity'))
+const RemoteSshActivity = lazy(() => import('./activities/RemoteSshActivity'))
 
 const DashboardDrawer: VoidComponent<{ devices: Device[] | undefined }> = (props) => {
   const { modal, setOpen } = useDrawerContext()
@@ -178,10 +179,10 @@ const Dashboard: Component<RouteSectionProps> = () => {
                   <Match when={urlState().dateStr === 'settings' || urlState().dateStr === 'prime'}>
                     <SettingsActivity dongleId={dongleId} />
                   </Match>
-                  <Match when={urlState().dateStr === 'live'}>
+                  <Match when={appConfig.enableLiveView && urlState().dateStr === 'live'}>
                     <LiveViewActivity dongleId={dongleId} />
                   </Match>
-                  <Match when={urlState().dateStr === 'ssh'}>
+                  <Match when={appConfig.enableRemoteSsh && urlState().dateStr === 'ssh'}>
                     <RemoteSshActivity dongleId={dongleId} />
                   </Match>
                   <Match when={urlState().dateStr} keyed>

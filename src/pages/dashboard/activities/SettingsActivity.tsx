@@ -1,5 +1,6 @@
 import { createEffect, createResource, createSignal, For, Show } from 'solid-js'
 import type { JSX, Resource, VoidComponent } from 'solid-js'
+import clsx from 'clsx'
 
 import {
   getDevice,
@@ -18,6 +19,7 @@ import Icon from '~/components/material/Icon'
 import IconButton from '~/components/material/IconButton'
 import TopAppBar from '~/components/material/TopAppBar'
 import { getDeviceName } from '~/utils/device'
+import { type TimeFormat, type UnitSystem, useTimeFormat, useUnitSystem } from '~/utils/preferences'
 
 const useAction = <T,>(action: () => Promise<T>): [() => void, Resource<T>] => {
   const [source, setSource] = createSignal(false)
@@ -190,16 +192,88 @@ const DeviceSettingsForm: VoidComponent<{ dongleId: string; device: Resource<Dev
   )
 }
 
+const UNIT_OPTIONS: { value: UnitSystem; label: string }[] = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'metric', label: 'Metric (km)' },
+  { value: 'imperial', label: 'Imperial (mi)' },
+]
+
+const TIME_FORMAT_OPTIONS: { value: TimeFormat; label: string }[] = [
+  { value: 'auto', label: 'Auto' },
+  { value: '24h', label: '24-hour' },
+  { value: '12h', label: '12-hour' },
+]
+
+const DisplayPreferencesForm: VoidComponent = () => {
+  const [unitSystem, setUnitSystem] = useUnitSystem()
+  const [timeFormat, setTimeFormat] = useTimeFormat()
+
+  return (
+    <div class="flex flex-col gap-4 border-t border-outline-variant pt-4">
+      <h2 class="text-lg">Display Preferences</h2>
+
+      <div class="flex flex-col gap-2">
+        <span class="text-sm text-on-surface-variant">Distance units</span>
+        <div class="inline-flex rounded-md bg-surface-container-high p-1 gap-1" role="radiogroup" aria-label="Distance units">
+          <For each={UNIT_OPTIONS}>
+            {(option) => (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={unitSystem() === option.value}
+                class={clsx(
+                  'flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors',
+                  unitSystem() === option.value
+                    ? 'bg-primary text-on-primary'
+                    : 'text-on-surface-variant hover:bg-surface-container-highest',
+                )}
+                onClick={() => setUnitSystem(option.value)}
+              >
+                {option.label}
+              </button>
+            )}
+          </For>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span class="text-sm text-on-surface-variant">Time format</span>
+        <div class="inline-flex rounded-md bg-surface-container-high p-1 gap-1" role="radiogroup" aria-label="Time format">
+          <For each={TIME_FORMAT_OPTIONS}>
+            {(option) => (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={timeFormat() === option.value}
+                class={clsx(
+                  'flex-1 rounded-sm px-3 py-1.5 text-sm font-medium transition-colors',
+                  timeFormat() === option.value
+                    ? 'bg-primary text-on-primary'
+                    : 'text-on-surface-variant hover:bg-surface-container-highest',
+                )}
+                onClick={() => setTimeFormat(option.value)}
+              >
+                {option.label}
+              </button>
+            )}
+          </For>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const SettingsActivity: VoidComponent<PrimeActivityProps> = (props) => {
   const [device] = createResource(() => props.dongleId, getDevice)
 
   return (
     <>
       <TopAppBar component="h2" leading={<IconButton class="md:hidden" name="arrow_back" href={`/${props.dongleId}`} />}>
-        Device Settings
+        Settings
       </TopAppBar>
-      <div class="flex flex-col gap-4 max-w-lg px-4">
+      <div class="flex flex-col gap-6 max-w-lg px-4 pb-8">
         <DeviceSettingsForm dongleId={props.dongleId} device={device} />
+        <DisplayPreferencesForm />
       </div>
     </>
   )
