@@ -116,7 +116,9 @@ const RouteVideoPlayer: VoidComponent<RouteVideoPlayerProps> = (props) => {
       props.ref?.(video)
     })
 
-    if ('MediaSource' in window) {
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      setHls(null)
+    } else if ('MediaSource' in window) {
       import('~/utils/hls').then((Hls) => {
         const player = Hls.createHls()
         player.attachMedia(video)
@@ -131,10 +133,8 @@ const RouteVideoPlayer: VoidComponent<RouteVideoPlayerProps> = (props) => {
       onCleanup(() => hls()?.destroy())
     } else {
       setHls(null)
-      if (!video.canPlayType('application/vnd.apple.mpegurl')) {
-        console.error('Browser does not support Media Source Extensions API')
-        setErrorMessage(ERROR_UNSUPPORTED_BROWSER)
-      }
+      console.error('Browser does not support Media Source Extensions API')
+      setErrorMessage(ERROR_UNSUPPORTED_BROWSER)
     }
   })
 
