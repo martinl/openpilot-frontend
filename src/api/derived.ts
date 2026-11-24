@@ -39,7 +39,7 @@ type StateDriveEvent = IDriveEvent & {
 }
 
 type UserFlagDriveEvent = IDriveEvent & {
-  type: 'user_flag'
+  type: 'user_flag' | 'user_bookmark'
   data: Record<string, never>
 }
 
@@ -97,7 +97,7 @@ export const getCoords = (route: Route): Promise<GPSPathPoint[]> =>
 const getDriveEvents = (route: Route): Promise<DriveEvent[]> =>
   getDerived<DriveEvent[]>(route, 'events.json').then((events) => events.flat())
 
-const generateTimelineEvents = (route: Route, events: DriveEvent[]): TimelineEvent[] => {
+export const generateTimelineEvents = (route: Route, events: DriveEvent[]): TimelineEvent[] => {
   const routeDuration = getRouteDuration(route)?.asMilliseconds() ?? (route.maxqlog + 1) * 60 * 1000
 
   // sort events by timestamp
@@ -152,7 +152,7 @@ const generateTimelineEvents = (route: Route, events: DriveEvent[]): TimelineEve
       if (!lastOverride && isOverriding(state)) {
         lastOverride = ev
       }
-    } else if (ev.type === 'user_flag') {
+    } else if (ev.type === 'user_flag' || ev.type === 'user_bookmark') {
       res.push({
         type: 'user_flag',
         route_offset_millis: ev.route_offset_millis,

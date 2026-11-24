@@ -23,7 +23,13 @@ export const queries = {
   cancelUpload: (dongleId: string) => {
     const queryClient = useQueryClient()
     return useMutation(() => ({
-      mutationFn: (ids: string[]) => cancelUpload(dongleId, ids),
+      // makeAthenaCall reports failures in-band; rethrow so the mutation
+      // enters its error state instead of succeeding silently.
+      mutationFn: async (ids: string[]) => {
+        const resp = await cancelUpload(dongleId, ids)
+        if (resp.error) throw new Error(resp.error)
+        return resp
+      },
       onSettled: () => queryClient.invalidateQueries({ queryKey: queries.onlineForDongle(dongleId) }),
     }))
   },
@@ -108,8 +114,11 @@ const UploadQueue: VoidComponent<{ dongleId: string }> = (props) => {
     setItems(reconcile(sorted))
   })
 
+  // Offline snapshot items carry no upload IDs, so there is nothing Athena can cancel.
+  const cancellableIds = createMemo(() => items.filter((item) => item.id).map((item) => item.id))
+
   const cancelAll = () => {
-    const ids = items.filter((item) => item.id).map((item) => item.id)
+    const ids = cancellableIds()
     if (ids.length === 0) return
     cancel().mutate(ids)
   }
@@ -118,10 +127,23 @@ const UploadQueue: VoidComponent<{ dongleId: string }> = (props) => {
     <div class="flex flex-col gap-4 bg-surface-container-lowest">
       <div class="flex p-4 justify-between items-center border-b-2 border-b-surface-container-low">
         <StatisticBar statistics={[{ label: 'Queued', value: () => items.length }]} />
-        <Button color="text" leading={<Icon name="clear_all" />} onClick={cancelAll}>
+        <Button
+          color="text"
+          disabled={cancellableIds().length === 0 || cancel().isPending}
+          leading={
+            <Icon class={cancel().isPending ? 'animate-spin' : undefined} name={cancel().isPending ? 'progress_activity' : 'clear_all'} />
+          }
+          onClick={cancelAll}
+        >
           Cancel all
         </Button>
       </div>
+      <Show when={cancel().isError}>
+        <div class="mx-4 flex items-center justify-between gap-2 rounded-md bg-error-container px-3 py-2 text-xs text-on-error-container">
+          <span>{(cancel().error as Error | null)?.message ?? 'Failed to cancel upload'}</span>
+          <IconButton name="close" size="20" title="Dismiss" onClick={() => cancel().reset()} />
+        </div>
+      </Show>
       <div class="relative h-[calc(4*3rem)] sm:h-[calc(6*3rem)] flex justify-center items-center text-on-surface-variant">
         <Switch
           fallback={

@@ -164,14 +164,18 @@ export const pairDevice = async (pairToken: string): Promise<string> => {
     if (!(error instanceof Error) || !(error.cause instanceof Response)) {
       throw error
     }
+    // Surface plain-text backend messages when present instead of generic copy.
+    const body = (error.cause as Response & { bodyText?: string }).bodyText?.trim()
     const msg =
+      (body && !body.startsWith('{') && body.length < 300 ? body : undefined) ??
       {
         400: 'invalid request',
         401: 'could not decode token - make sure your comma device is connected to the internet',
         403: 'device paired with different owner - make sure you signed in with the correct account',
-        404: 'tried to pair invalid device',
+        404: 'this device is not registered with Openpilot Connect - clear its DongleId and reboot so it registers, then pair again',
         417: 'pair token not true',
-      }[error.cause.status] ?? 'unable to pair'
+      }[error.cause.status] ??
+      'unable to pair'
     throw new Error(msg, { cause: error.cause })
   }
 }
