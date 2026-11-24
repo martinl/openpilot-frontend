@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
   pull_request:
   merge_group:
     types: [checks_requested]
@@ -14,9 +16,38 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' && !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
+  lint:
+    name: Lint & Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.5.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: error
+
+      - name: Lint shell scripts
+        run: shellcheck -S warning scripts/*.sh
+
+      - name: Scan repo for secrets & misconfigurations (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: secret,misconfig
+          severity: CRITICAL,HIGH
+          exit-code: '0'
+
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -64,11 +95,12 @@ jobs:
           name: build-artifacts-${{ github.run_id }}
 
   docker:
-    needs: verify
+    needs: [lint, verify]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v5
       - id: buildx
@@ -77,16 +109,20 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v6
         with:
-          images: openpilot-frontend
+          images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=local-test
+            type=raw,value=test,enable=${{ github.ref == 'refs/heads/master' }}
+            type=sha,prefix=sha-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
 
       - name: Get commit date
         run: echo "GIT_TIMESTAMP=$(git show -s --format=%cI)" >> $GITHUB_ENV
 
-      - name: Build container image for verification
+      - name: Build container image for scanning
         uses: docker/build-push-action@v7
         env:
           DOCKER_BUILD_SUMMARY: false
@@ -98,9 +134,10 @@ jobs:
           secrets: ${{ secrets.SENTRY_AUTH_TOKEN != '' && format('sentry_auth_token={0}', secrets.SENTRY_AUTH_TOKEN) || '' }}
           builder: ${{ steps.buildx.outputs.name }}
           context: .
+          platforms: linux/amd64
           load: true
           push: false
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: local/frontend:scan
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -108,8 +145,35 @@ jobs:
       - name: Scan container image for vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          image-ref: local/frontend:scan
           format: table
           exit-code: 1
           ignore-unfixed: true
           severity: CRITICAL,HIGH
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push verified container image to GHCR
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
+        uses: docker/build-push-action@v7
+        env:
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          build-args: |
+            VITE_APP_GIT_SHA=${{ github.sha }}
+            VITE_APP_GIT_TIMESTAMP=${{ env.GIT_TIMESTAMP }}
+            SENTRY_RELEASE=${{ github.sha }}
+          secrets: ${{ secrets.SENTRY_AUTH_TOKEN != '' && format('sentry_auth_token={0}', secrets.SENTRY_AUTH_TOKEN) || '' }}
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
