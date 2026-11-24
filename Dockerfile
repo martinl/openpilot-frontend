@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.7
 
 # *** build app ***
 FROM oven/bun:1.4.4-alpine AS build
@@ -22,9 +22,18 @@ RUN --mount=type=secret,id=sentry_auth_token,required=false \
 
 # *** final image (non-root, port 8080) ***
 FROM nginxinc/nginx-unprivileged:1.27-alpine
-USER root
-RUN apk upgrade --no-cache
-USER 101
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+USER 0
+RUN apk upgrade --no-cache \
+  && rm -rf /usr/share/nginx/html/* \
+  && chown -R 101:101 /usr/share/nginx/html
+
+COPY --chown=101:101 nginx.conf /etc/nginx/conf.d/default.conf
+COPY --chmod=755 --chown=101:101 scripts/40-openpilot-runtime-config.sh /docker-entrypoint.d/40-openpilot-runtime-config.sh
+COPY --from=build --chown=101:101 /app/dist /usr/share/nginx/html
+
+USER 101:101
+
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD ["wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
