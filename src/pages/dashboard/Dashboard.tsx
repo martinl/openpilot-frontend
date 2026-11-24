@@ -1,74 +1,32 @@
-import { createMemo, createResource, ErrorBoundary, lazy, Match, Show, Suspense, Switch } from 'solid-js'
+import { createMemo, createResource, lazy, Match, Show, Switch } from 'solid-js'
 import type { Component, JSXElement, VoidComponent } from 'solid-js'
 import { Navigate, type RouteSectionProps, useLocation } from '@solidjs/router'
 import clsx from 'clsx'
 
 import { isSignedIn } from '~/api/auth/client'
-import { USERADMIN_URL } from '~/api/config'
 import { getDevices } from '~/api/devices'
-import { getProfile } from '~/api/profile'
 import { appConfig } from '~/config'
 import storage from '~/utils/storage'
 import type { Device } from '~/api/types'
 
 import Button from '~/components/material/Button'
-import ButtonBase from '~/components/material/ButtonBase'
 import Drawer, { DrawerToggleButton, useDrawerContext } from '~/components/material/Drawer'
 import Icon from '~/components/material/Icon'
-import IconButton from '~/components/material/IconButton'
 import TopAppBar from '~/components/material/TopAppBar'
 
-import DeviceList from './components/DeviceList'
+import Sidebar from './components/Sidebar'
 import DeviceActivity from './activities/DeviceActivity'
 import RouteActivity from './activities/RouteActivity'
 import SettingsActivity from './activities/SettingsActivity'
 import BuildInfo from '~/components/BuildInfo'
+import DeviceSummary from '~/components/DeviceSummary'
 
 const LiveViewActivity = lazy(() => import('./activities/LiveViewActivity'))
 const PairActivity = lazy(() => import('./activities/PairActivity'))
 
-const DashboardDrawer: VoidComponent<{ devices: Device[] | undefined }> = (props) => {
-  const { modal, setOpen } = useDrawerContext()
-  const onClose = () => setOpen(false)
-  const [profile] = createResource(getProfile)
-
-  return (
-    <>
-      <TopAppBar
-        component="h2"
-        leading={
-          <Show when={modal()}>
-            <IconButton name="arrow_back" onClick={onClose} />
-          </Show>
-        }
-      >
-        Devices
-      </TopAppBar>
-      <DeviceList class="overflow-y-auto p-2" devices={props.devices} />
-      <div class="grow" />
-      <Button class="m-4" leading={<Icon name="add" />} href="/pair" onClick={onClose}>
-        Add new device
-      </Button>
-      <div class="m-4 mt-0">
-        <ButtonBase href={USERADMIN_URL} onClick={onClose}>
-          <Suspense fallback={<div class="min-h-16 rounded-md skeleton-loader" />}>
-            <div class="flex min-h-16 max-w-full items-center rounded-md px-3 outline outline-1 outline-outline-variant">
-              <div class="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-container text-on-primary-container">
-                <Icon name="person" filled />
-              </div>
-              <div class="mx-3 min-w-0">
-                <ErrorBoundary fallback="Error loading profile">
-                  <div class="truncate text-sm text-on-surface">{profile()?.email}</div>
-                </ErrorBoundary>
-              </div>
-              <div class="grow" />
-              <IconButton name="logout" href="/logout" />
-            </div>
-          </Suspense>
-        </ButtonBase>
-      </div>
-    </>
-  )
+const DashboardDrawer: VoidComponent<{ devices: Device[] | undefined; dongleId: string | undefined }> = (props) => {
+  const { setOpen } = useDrawerContext()
+  return <Sidebar devices={props.devices} dongleId={props.dongleId} onNavigate={() => setOpen(false)} />
 }
 
 const DashboardLayout: Component<{
@@ -153,7 +111,7 @@ const Dashboard: Component<RouteSectionProps> = () => {
   }
 
   return (
-    <Drawer drawer={<DashboardDrawer devices={devices()} />}>
+    <Drawer drawer={<DashboardDrawer devices={devices()} dongleId={urlState().dongleId} />}>
       <Switch>
         <Match when={!isSignedIn()}>
           <Navigate href="/login" />
@@ -168,10 +126,14 @@ const Dashboard: Component<RouteSectionProps> = () => {
               paneTwo={
                 <Switch
                   fallback={
-                    <div class="hidden size-full flex-col items-center justify-center gap-4 md:flex">
-                      <Icon name="search" size="48" />
-                      <span class="text-md">Select a route to view</span>
-                      <BuildInfo class="absolute bottom-4" />
+                    <div class="hidden size-full flex-col gap-4 px-4 pb-4 md:flex">
+                      <TopAppBar component="h2">Overview</TopAppBar>
+                      <DeviceSummary dongleId={dongleId} />
+                      <div class="flex flex-1 flex-col items-center justify-center gap-3 text-on-surface-variant">
+                        <Icon name="search" size="40" />
+                        <span class="text-sm">Select a drive to view it</span>
+                      </div>
+                      <BuildInfo class="self-center" />
                     </div>
                   }
                 >
