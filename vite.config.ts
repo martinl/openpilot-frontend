@@ -87,7 +87,7 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    sourcemap: true, // must be turned on for Sentry
+    sourcemap: 'hidden', // must be turned on for Sentry
   },
   resolve: {
     alias: {
