@@ -67,6 +67,6 @@ export const appConfig: AppConfig = {
   sentryDsn: appCfg.sentryDsn ?? (import.meta.env.VITE_SENTRY_DSN as string | undefined) ?? '',
   sentryEnvironment: appCfg.sentryEnvironment ?? (import.meta.env.VITE_SENTRY_ENVIRONMENT as string | undefined),
   iceServers: appCfg.iceServers ?? [{ urls: ['stun:stun.l.google.com:19302'] }],
-  enableLiveView: appCfg.enableLiveView ?? parseEnvBool(import.meta.env.VITE_ENABLE_LIVE_VIEW as string | undefined) ?? false,
+  enableLiveView: appCfg.enableLiveView ?? parseEnvBool(import.meta.env.VITE_ENABLE_LIVE_VIEW as string | undefined) ?? true,
   enableRemoteSsh: appCfg.enableRemoteSsh ?? parseEnvBool(import.meta.env.VITE_ENABLE_REMOTE_SSH as string | undefined) ?? false,
 }

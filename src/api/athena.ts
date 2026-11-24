@@ -51,6 +51,37 @@ export const takeSnapshot = (dongleId: string) =>
     }
   >(dongleId, 'takeSnapshot')
 
+export interface StartStreamResult {
+  sdp?: string
+  time?: number
+  error?: string
+  message?: string
+}
+
+export const startStream = (dongleId: string, sdp: string, enabled = true) =>
+  makeAthenaCall<{ sdp: string; enabled: boolean }, StartStreamResult>(dongleId, 'startStream', { sdp, enabled })
+
+const TURN_CACHE_TTL_MS = 55 * 60 * 1000
+let cachedTurnServers: RTCIceServer[] | null = null
+let cachedTurnAt = 0
+
+export const getTurnIceServers = async (fallback: RTCIceServer[]): Promise<RTCIceServer[]> => {
+  if (cachedTurnServers && Date.now() - cachedTurnAt < TURN_CACHE_TTL_MS) {
+    return cachedTurnServers
+  }
+  try {
+    const resp = await fetcher<{ iceServers?: RTCIceServer[] }>('/v1/me/turn')
+    if (Array.isArray(resp?.iceServers) && resp.iceServers.length > 0) {
+      cachedTurnServers = resp.iceServers
+      cachedTurnAt = Date.now()
+      return resp.iceServers
+    }
+  } catch {
+    // Backend may not implement /v1/me/turn; fall back to configured STUN/TURN servers.
+  }
+  return fallback
+}
+
 export const getSdp = (dongleId: string, authToken?: string) =>
   makeAthenaCall<{ authToken?: string }, { type?: string; sdp?: string; error?: string }>(dongleId, 'getSdp', { authToken })
 
