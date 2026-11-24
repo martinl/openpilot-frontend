@@ -17,18 +17,9 @@ export interface AppConfig {
   enableLiveView: boolean
 }
 
-export interface OpenpilotLegacyConfig {
-  API_HOST?: string
-  ATHENA_HOST?: string
-  GITHUB_CLIENT_ID?: string
-  USERADMIN_HOST?: string
-  MAPBOX_TOKEN?: string
-}
-
 declare global {
   interface Window {
     __APP_CONFIG__?: Partial<AppConfig>
-    __OPENPILOT_CONFIG__?: OpenpilotLegacyConfig
   }
 }
 
@@ -38,24 +29,19 @@ const parseEnvBool = (value: string | undefined): boolean | undefined => {
 }
 
 const appCfg: Partial<AppConfig> = typeof window !== 'undefined' && window.__APP_CONFIG__ ? window.__APP_CONFIG__ : {}
-const legacyCfg: OpenpilotLegacyConfig = typeof window !== 'undefined' && window.__OPENPILOT_CONFIG__ ? window.__OPENPILOT_CONFIG__ : {}
 
 export const appConfig: AppConfig = {
-  apiUrl: appCfg.apiUrl ?? legacyCfg.API_HOST ?? (import.meta.env.VITE_API_URL as string | undefined) ?? '',
-  athenaUrl: appCfg.athenaUrl ?? legacyCfg.ATHENA_HOST ?? (import.meta.env.VITE_ATHENA_URL as string | undefined) ?? '',
+  apiUrl: appCfg.apiUrl ?? (import.meta.env.VITE_API_URL as string | undefined) ?? '',
+  athenaUrl: appCfg.athenaUrl ?? (import.meta.env.VITE_ATHENA_URL as string | undefined) ?? '',
   billingUrl: appCfg.billingUrl ?? (import.meta.env.VITE_BILLING_URL as string | undefined) ?? 'https://billing.comma.ai',
-  useradminUrl: appCfg.useradminUrl ?? legacyCfg.USERADMIN_HOST ?? (import.meta.env.VITE_USERADMIN_URL as string | undefined) ?? '',
-  githubClientId:
-    appCfg.githubClientId ??
-    legacyCfg.GITHUB_CLIENT_ID ??
-    (import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined) ??
-    'Ov23liy0AI1YCd15pypf',
+  useradminUrl: appCfg.useradminUrl ?? (import.meta.env.VITE_USERADMIN_URL as string | undefined) ?? '',
+  githubClientId: appCfg.githubClientId ?? (import.meta.env.VITE_GITHUB_CLIENT_ID as string | undefined) ?? 'Ov23liy0AI1YCd15pypf',
   googleClientId:
     appCfg.googleClientId ??
     (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) ??
     '45471411055-ornt4svd2miog6dnopve7qtmh5mnu6id.apps.googleusercontent.com',
   appleClientId: appCfg.appleClientId ?? (import.meta.env.VITE_APPLE_CLIENT_ID as string | undefined) ?? 'ai.comma.login',
-  mapboxToken: appCfg.mapboxToken ?? legacyCfg.MAPBOX_TOKEN ?? (import.meta.env.VITE_MAPBOX_TOKEN as string | undefined) ?? '',
+  mapboxToken: appCfg.mapboxToken ?? (import.meta.env.VITE_MAPBOX_TOKEN as string | undefined) ?? '',
   mapboxUsername: appCfg.mapboxUsername ?? (import.meta.env.VITE_MAPBOX_USERNAME as string | undefined) ?? 'commaai',
   mapboxLightStyleId:
     appCfg.mapboxLightStyleId ?? (import.meta.env.VITE_MAPBOX_LIGHT_STYLE_ID as string | undefined) ?? 'clcl7mnu2000214s2zgcdly6e',

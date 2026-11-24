@@ -44,20 +44,20 @@ bun dev
 
 ## Runtime Configuration
 
-In production/Kubernetes, runtime configuration is served from `/config.js` (excluded from service worker precaching and served with `Cache-Control: no-store`). Both `window.__OPENPILOT_CONFIG__` (injected by `openpilot-backend` container entrypoint) and `window.__APP_CONFIG__` are supported, falling back to `VITE_*` environment variables in local development:
+In production/Kubernetes, runtime configuration is served from `/config.js` (excluded from service worker precaching and served with `Cache-Control: no-store`). The container entrypoint (`scripts/40-openpilot-runtime-config.sh`) generates `window.__APP_CONFIG__` from environment variables (`API_ENDPOINT`, `ATHENA_ENDPOINT`, `USERADMIN_URL`, `GITHUB_CLIENT`, `MAPBOX_TOKEN`), falling back to `VITE_*` environment variables in local development:
 
 ```js
 // /usr/share/nginx/html/config.js
-window.__OPENPILOT_CONFIG__ = {
-  API_HOST: "https://api.apps.k8s.mlp.ee",
-  ATHENA_HOST: "https://athena.apps.k8s.mlp.ee",
-  GITHUB_CLIENT_ID: "<github-oauth-client-id>",
-  USERADMIN_HOST: "https://useradmin.apps.k8s.mlp.ee",
-  MAPBOX_TOKEN: "<mapbox-public-token>",
+window.__APP_CONFIG__ = {
+  apiUrl: "https://api.apps.k8s.mlp.ee",
+  athenaUrl: "https://athena.apps.k8s.mlp.ee",
+  useradminUrl: "https://useradmin.apps.k8s.mlp.ee",
+  githubClientId: "<github-oauth-client-id>",
+  mapboxToken: "<mapbox-public-token>",
 };
 ```
 
-See [`src/config.ts`](src/config.ts) for the full list of supported configuration options (`window.__APP_CONFIG__`).
+See [`src/config.ts`](src/config.ts) for the full list of supported `window.__APP_CONFIG__` options.
 
 ## Docker
 
