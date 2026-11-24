@@ -132,7 +132,7 @@ export const FileTypes = {
 export type FileType = keyof typeof FileTypes
 
 // Higher number is lower priority
-export const COMMA_CONNECT_PRIORITY = 1
+export const COMMA_CONNECT_PRIORITY = 0
 
 // Uploads expire after 1 week if device remains offline
 const EXPIRES_IN_SECONDS = 60 * 60 * 24 * 7

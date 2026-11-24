@@ -136,6 +136,8 @@ const QrScannerView: VoidComponent<{
         highlightScanRegion: true,
       },
     )
+    // Support both dark-on-light and light-on-dark QR codes.
+    qrScanner.setInversionMode('both')
 
     void startStream()
       .then(async () => {

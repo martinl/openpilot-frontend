@@ -26,7 +26,7 @@ export async function fetcher<T>(endpoint: string, init?: RequestInit, apiUrl: s
   const res = await fetch(req)
   const text = await res.text()
   if (!res.ok) {
-    throw new Error(`${req.method} ${req.url} ${res.status}`, { cause: res })
+    throw new Error(`${req.method} ${req.url} ${res.status}`, { cause: Object.assign(res, { bodyText: text }) })
   }
   // biome-ignore lint/suspicious/noImplicitAnyLet: TODO: validate server response
   let json
