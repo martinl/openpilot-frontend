@@ -26,7 +26,6 @@ import BuildInfo from '~/components/BuildInfo'
 
 const LiveViewActivity = lazy(() => import('./activities/LiveViewActivity'))
 const PairActivity = lazy(() => import('./activities/PairActivity'))
-const RemoteSshActivity = lazy(() => import('./activities/RemoteSshActivity'))
 
 const DashboardDrawer: VoidComponent<{ devices: Device[] | undefined }> = (props) => {
   const { modal, setOpen } = useDrawerContext()
@@ -181,9 +180,6 @@ const Dashboard: Component<RouteSectionProps> = () => {
                   </Match>
                   <Match when={appConfig.enableLiveView && urlState().dateStr === 'live'}>
                     <LiveViewActivity dongleId={dongleId} />
-                  </Match>
-                  <Match when={appConfig.enableRemoteSsh && urlState().dateStr === 'ssh'}>
-                    <RemoteSshActivity dongleId={dongleId} />
                   </Match>
                   <Match when={urlState().dateStr} keyed>
                     {(dateStr) => (

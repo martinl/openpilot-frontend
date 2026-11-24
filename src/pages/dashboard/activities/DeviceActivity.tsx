@@ -180,9 +180,6 @@ const DeviceActivity: VoidComponent<DeviceActivityProps> = (props) => {
               <Show when={appConfig.enableLiveView}>
                 <IconButton name="videocam" title="Live View" aria-label="Live View" href={`/${props.dongleId}/live`} />
               </Show>
-              <Show when={appConfig.enableRemoteSsh}>
-                <IconButton name="terminal" title="Remote SSH" aria-label="Remote SSH" href={`/${props.dongleId}/ssh`} />
-              </Show>
               <IconButton name="settings" title="Settings" aria-label="Settings" href={`/${props.dongleId}/settings`} />
             </div>
           </div>
