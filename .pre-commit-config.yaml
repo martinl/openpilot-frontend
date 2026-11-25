@@ -30,3 +30,9 @@ repos:
         language: system
         types_or: [ts, tsx]
         pass_filenames: false
+      - id: bun-audit
+        name: bun audit (high/critical)
+        entry: bash -c 'if command -v bun >/dev/null 2>&1; then bun audit --audit-level=high; else echo "bun not installed, skipping bun audit"; fi'
+        language: system
+        files: ^(package\.json|bun\.lock)$
+        pass_filenames: false

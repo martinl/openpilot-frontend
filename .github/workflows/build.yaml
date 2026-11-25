@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint & Security Scan
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -39,16 +39,8 @@ jobs:
       - name: Lint shell scripts
         run: shellcheck -S warning scripts/*.sh
 
-      - name: Scan repo for secrets & misconfigurations (Trivy)
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          scanners: secret,misconfig
-          severity: CRITICAL,HIGH
-          exit-code: '0'
-
   verify:
+    name: Build, Test & Security
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -83,8 +75,16 @@ jobs:
 
       - name: Dependency security audit
         timeout-minutes: 3
-        continue-on-error: true
-        run: bun audit --audit-level=high || echo "::warning::High/critical advisories found in bun.lock"
+        run: bun audit --audit-level=high
+
+      - name: Scan repo for secrets & misconfigurations (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: secret,misconfig
+          severity: CRITICAL,HIGH
+          exit-code: '0'
 
       - name: Upload built project
         uses: actions/upload-artifact@v6
@@ -95,6 +95,7 @@ jobs:
           name: build-artifacts-${{ github.run_id }}
 
   docker:
+    name: Container Build & Push
     needs: [lint, verify]
     runs-on: ubuntu-latest
     timeout-minutes: 15

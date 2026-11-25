@@ -1,4 +1,6 @@
-import { defineConfig } from 'vite'
+import { loadEnv } from 'vite'
+import { configDefaults, defineConfig } from 'vitest/config'
+import { playwright } from '@vitest/browser-playwright'
 import solid from 'vite-plugin-solid'
 import devtools from 'solid-devtools/vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
@@ -93,5 +95,33 @@ export default defineConfig({
     alias: {
       '~': '/src',
     },
+  },
+  test: {
+    projects: [
+      {
+        extends: true,
+        test: {
+          include: ['src/**/*.{test,spec}.ts', 'src/**/*.unit.{test,spec}.ts'],
+          exclude: [...configDefaults.exclude, '**/*.browser.{test,spec}.{ts,tsx}'],
+          name: 'unit',
+          environment: 'node',
+          env: loadEnv('development', '.'),
+        },
+      },
+      {
+        extends: true,
+        test: {
+          include: ['**/*.browser.{test,spec}.{ts,tsx}'],
+          name: 'browser',
+          includeTaskLocation: true,
+          browser: {
+            provider: playwright(),
+            enabled: true,
+            headless: true,
+            instances: [{ browser: 'chromium' }],
+          },
+        },
+      },
+    ],
   },
 })
