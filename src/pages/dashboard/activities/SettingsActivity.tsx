@@ -122,7 +122,7 @@ const DeviceSettingsForm: VoidComponent<{ dongleId: string; device: Resource<Dev
   }
 
   return (
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4 border-t border-outline-variant pt-4">
       <h2 class="text-lg">{deviceTitle()}</h2>
 
       <Show when={isOwner()}>
@@ -209,7 +209,7 @@ const DisplayPreferencesForm: VoidComponent = () => {
   const [timeFormat, setTimeFormat] = useTimeFormat()
 
   return (
-    <div class="flex flex-col gap-4 border-t border-outline-variant pt-4">
+    <div class="flex flex-col gap-4">
       <h2 class="text-lg">Display Preferences</h2>
 
       <div class="flex flex-col gap-2">
@@ -272,8 +272,8 @@ const SettingsActivity: VoidComponent<PrimeActivityProps> = (props) => {
         Settings
       </TopAppBar>
       <div class="flex flex-col gap-6 max-w-lg px-4 pb-8">
-        <DeviceSettingsForm dongleId={props.dongleId} device={device} />
         <DisplayPreferencesForm />
+        <DeviceSettingsForm dongleId={props.dongleId} device={device} />
       </div>
     </>
   )
