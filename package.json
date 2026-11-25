@@ -37,8 +37,7 @@
     "vite": "builds and serves app",
     "vite-plugin-pwa": "generate the service worker for PWA",
     "vite-plugin-solid": "allows vite to properly compile solid components",
-    "vitest": "testing framework compatible with vite (only used for App.jsx component)",
-    "wrangler": "used for deploying assets to cloudflare"
+    "vitest": "testing framework compatible with vite (only used for App.jsx component)"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.3",
@@ -60,8 +59,7 @@
     "vite": "^6.4.6",
     "vite-plugin-pwa": "^0.21.2",
     "vite-plugin-solid": "^2.11.6",
-    "vitest": "^3.1.1",
-    "wrangler": "^4.9.1"
+    "vitest": "^3.1.1"
   },
   "//dependencies": {
     "@mapbox/polyline": "display series of map coordinates as a line",
@@ -81,7 +79,6 @@
     "@solidjs/router": "^0.15.3",
     "@tanstack/solid-query": "^5.72.2",
     "@tanstack/solid-virtual": "^3.13.23",
-    "build": "^0.1.4",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "hls.js": "1.5.20",
