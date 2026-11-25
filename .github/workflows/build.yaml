@@ -45,14 +45,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
-      - name: Scan repo for secrets & misconfigurations (Trivy)
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          scanners: secret,misconfig
-          severity: CRITICAL,HIGH
-          exit-code: '0'
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -84,6 +76,15 @@ jobs:
       - name: Dependency security audit
         timeout-minutes: 3
         run: bun audit --audit-level=high
+
+      - name: Scan repo for secrets & misconfigurations (Trivy)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: secret,misconfig
+          severity: CRITICAL,HIGH
+          exit-code: '0'
 
       - name: Upload built project
         uses: actions/upload-artifact@v6
