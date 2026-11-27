@@ -99,7 +99,15 @@ const Dashboard: Component<RouteSectionProps> = () => {
     }
   })
 
-  const [devices, { refetch }] = createResource(getDevices, { initialValue: undefined })
+  const [devices, { refetch }] = createResource(() => (isSignedIn() ? true : undefined), getDevices, { initialValue: undefined })
+
+  const sharedRoute = createMemo(() => {
+    if (isSignedIn()) return undefined
+    const { dongleId, dateStr } = urlState()
+    if (!dongleId || !dateStr || dongleId === 'pair') return undefined
+    if (['settings', 'prime', 'live'].includes(dateStr)) return undefined
+    return { dongleId, dateStr }
+  })
 
   const getDefaultDongleId = () => {
     // Do not redirect if dongle ID already selected
@@ -113,6 +121,18 @@ const Dashboard: Component<RouteSectionProps> = () => {
   return (
     <Drawer drawer={<DashboardDrawer devices={devices()} dongleId={urlState().dongleId} />}>
       <Switch>
+        <Match when={sharedRoute()} keyed>
+          {(shared) => (
+            <div class="mx-auto size-full max-w-[1600px] overflow-y-scroll">
+              <RouteActivity
+                dongleId={shared.dongleId}
+                dateStr={shared.dateStr}
+                startTime={urlState().startTime}
+                endTime={urlState().endTime}
+              />
+            </div>
+          )}
+        </Match>
         <Match when={!isSignedIn()}>
           <Navigate href="/login" />
         </Match>
